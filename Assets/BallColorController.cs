@@ -31,28 +31,14 @@ public class BallColorController : MonoBehaviour
     }
 
     void colorChange(Color newColor) {
+        PlayerPrefs.SetString("BallColor", ColorUtility.ToHtmlStringRGB(newColor));
+        PlayerPrefs.Save();
+
         if (circleRenderer != null)
         {
             circleRenderer.material.color = newColor;
         }
 
-        switch (ColorUtility.ToHtmlStringRGB(newColor))
-            {
-                case "FFFFFF":
-                    Debug.Log("White clicked");
-                    break;
-                case "FF0000":
-                    Debug.Log("Red clicked");
-                    break;
-                case "0000FF":
-                    Debug.Log("Blue clicked");
-                    break;
-                case "00FF00": 
-                    Debug.Log("Green clicked");
-                    break;
-                case "800080":
-                    Debug.Log("Purple clicked");
-                    break;
-            }
+        Debug.Log("Color selected: " + newColor);
     }
 }

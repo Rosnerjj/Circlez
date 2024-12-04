@@ -12,18 +12,28 @@ public class ProjectileScript : MonoBehaviour
     private Rigidbody2D rb;
     public float force = 1f;
     public float speed = 5f;
+    public int life = 100;
+    private Vector2 direction; 
 
     public SquareScript squarePrefab;
+    public AimingController aimingController;
      
     // Start is called before the first frame update
     void Start()
     {
         camera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         rb = this.GetComponent<Rigidbody2D>();
+
+        string savedColorHex = PlayerPrefs.GetString("BallColor", "FFFFFF"); // Default to white
+        if (UnityEngine.ColorUtility.TryParseHtmlString("#" + savedColorHex, out Color savedColor))
+        {
+            GetComponent<Renderer>().material.color = savedColor;
+        }
+
         mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
         Vector3 direction = transform.localPosition - mousePos;
         Vector3 rotation = transform.localPosition - mousePos;
-        rb.velocity = new Vector2(direction.x, direction.y).normalized * force;  
+        rb.velocity = new Vector2(direction.x, direction.y).normalized * speed;  
 
         float rot = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, rot); 
@@ -34,34 +44,53 @@ public class ProjectileScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position += velocity * Time.deltaTime;
-
         Vector3 screenPos = Camera.main.WorldToViewportPoint(transform.position);
 
-        if (screenPos.x <= 0 || screenPos.x >= 1)
-        {
-            velocity.x = -velocity.x;
-        }
-        if (screenPos.y >= .9)
-        {
-            velocity.y = -velocity.y;
-        }
         if(screenPos.y <= 0) 
         {
-            Destroy(gameObject);
+            DestroyProjectile();
         }
         
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void Bounce(Vector2 direction) 
     {
+        this.direction = direction;
+        rb.velocity = this.velocity * force;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        life--;
         if (collision.gameObject.CompareTag("Square"))
         {
-            squarePrefab = collision.GetComponent<SquareScript>();
-            if(squarePrefab != null) {
-                squarePrefab.health--;
+            var normal = collision.contacts[0];
+            Vector2 newVelocity = Vector2.Reflect(direction.normalized, normal.normal);
+            Bounce(newVelocity.normalized);
+
+            SquareScript squareScript = collision.gameObject.GetComponent<SquareScript>();
+            if (squareScript != null)
+            {
+                squareScript.health--;
                 Debug.Log("Square hit");
             }
+            
         }
+        if(life == 0) 
+        {
+            DestroyProjectile();
+        }
+
+        
     }
+    private void DestroyProjectile()
+    {
+        if (aimingController != null)
+        {
+            aimingController.RemoveProjectile(gameObject);
+        }
+
+        Destroy(gameObject);
+    }
+    
 }

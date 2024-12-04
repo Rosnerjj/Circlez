@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -39,5 +40,11 @@ public class ButtonController : MonoBehaviour
     public void ResumeGame() {
         pauseMenu.Resume();
         Debug.Log("Game resumed");
+    }
+
+    public void Tutorial()
+    {
+        SceneManager.LoadSceneAsync(3);
+        Debug.Log("Tutorial started");
     }
 }

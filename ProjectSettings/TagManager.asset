@@ -6,11 +6,13 @@ TagManager:
   tags:
   - Circle
   - Square
+  - Border
+  - Projectile
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ProjectileLayer
   - Water
   - UI
   - 
